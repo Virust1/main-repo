@@ -26,18 +26,32 @@ io.on('connection', function(socket) {
   socket.on('new player', function() {
     players[socket.id] = {
       x: 400,
-      y: 300
+      y: 300,
+      camX: 400,
+      camY: 300,
+      mouseX: 0,
+      mouseY: 0,
+      id: socket.id
     };
+    io.sockets.connected[socket.id].emit('id', socket.id);
   });
+
   socket.on('movement', function(data) {
     var player = players[socket.id] || {};
-    if(data.x!=player.x) {
-      player.x=data.x;
+    if(data.left) {
+      player.x-=5;
     }
-    if(data.y!=player.y) {
-      player.y=data.y;
+    if(data.right) {
+      player.x+=5;
+    }
+    if(data.down) {
+      player.y+=5;
+    }
+    if(data.up) {
+      player.y-=5;
     }
   });
+
   socket.on('disconnect', function() {
     delete(players[socket.id]);
   });

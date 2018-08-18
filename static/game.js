@@ -1,6 +1,13 @@
 var socket = io();
+var id;
+
 socket.on('message', function(data) {
   console.log(data);
+});
+
+socket.on('id', function(data) {
+  id = data;
+  console.log(id);
 });
 
 var loc = {
@@ -50,36 +57,27 @@ document.addEventListener('keyup', function(event) {
 
 socket.emit('new player');
 setInterval(function() {
-  move();
-  socket.emit('movement', loc);
+  socket.emit('movement', movement);
 }, 1000 / 60);
-
-function move() {
-  if(movement.left) {
-    loc.x-=5;
-  }
-  if(movement.right) {
-    loc.x+=5;
-  }
-  if(movement.down) {
-    loc.y+=5;
-  }
-  if(movement.up) {
-    loc.y-=5;
-  }
-}
 
 var canvas = document.getElementById('canvas');
 canvas.width = 800;
 canvas.height = 600;
 var ctx = canvas.getContext('2d');
+
 socket.on('state', function(players) {
+  if(id==null) {
+    return;
+  }
+  
+  var player = players[id];
+
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, 800, 600);
 
   ctx.strokeStyle = 'white';
   var i;
-  for(i = -loc.x%50; i<800; i+=50) {
+  for(i = -player.x%50; i<800; i+=50) {
     ctx.beginPath();
     ctx.moveTo(i, 0);
     ctx.lineTo(i, 600);
@@ -87,7 +85,7 @@ socket.on('state', function(players) {
     ctx.stroke();
   }
   var j;
-  for(j = -loc.y%50; j<600; j+=50) {
+  for(j = -player.y%50; j<600; j+=50) {
     ctx.beginPath();
     ctx.moveTo(0, j);
     ctx.lineTo(800, j);
@@ -96,12 +94,12 @@ socket.on('state', function(players) {
   }
 
   ctx.fillStyle = 'white';
-  var xdif = 400-loc.x;
-  var ydif = 300-loc.y;
-  for (var id in players) {
-    var player = players[id];
+  var xdif = 400-player.x;
+  var ydif = 300-player.y;
+  for (var i in players) {
+    var p = players[i];
     ctx.beginPath();
-    ctx.arc(player.x+xdif, player.y+ydif, 10, 0, 2 * Math.PI);
+    ctx.arc(p.x+xdif, p.y+ydif, 10, 0, 2 * Math.PI);
     ctx.fill();
   }
 });
